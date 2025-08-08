@@ -56,8 +56,8 @@ export const getUserById = async(req, res) => {
 export const createUser = async(req, res) => {
     try {
         // Get and check request body
-        const { name, username, email, password, role_id } = req.body
-        if(!name || !username || !email || !password || !role_id){
+        const { name, username, email, password, passwordConfirmation, role_id } = req.body
+        if(!name || !username || !email || !password ||!passwordConfirmation || !role_id){
             return res.status(400).json({ message: "Please fill all required fields!"})
         }
 
@@ -81,6 +81,9 @@ export const createUser = async(req, res) => {
         const foundRole = await db.execute("SELECT ROLENAME FROM ROLES WHERE id = :role_id", { role_id: role_id })
         if(foundRole.rows.length === 0){
             return res.status(404).json({ message: "Role invalid!"})
+        }
+        if(password !== passwordConfirmation){
+            return res.status(400).json({ message: "Password doesn't match!"})
         }
         const hashedPassword = await bcrypt.hash(password, 10)
 
