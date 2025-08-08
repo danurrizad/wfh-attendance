@@ -5,7 +5,7 @@ import axiosInstance from "../utils/AxiosInstance";
 
 const useVerify = () => {
   const { showError } = useToast()
-  const { auth, setTokenAndDecode } = useAuth()
+  const { auth, setTokenAndDecode, clearAuth } = useAuth()
   const navigate = useNavigate()
 
   const axiosJWT = axiosInstance.create()
@@ -70,7 +70,9 @@ const useVerify = () => {
 
   return{
     auth,
-    axiosJWT
+    axiosJWT,
+    authIsReady,
+    clearAuth
   }
 }
 
