@@ -13,7 +13,8 @@ const Input = ({
   success = false,
   error = false,
   hint,
-  endIcon
+  endIcon,
+  onKeyDown
 }) => {
 
   let inputClasses = ` h-11 w-full bg-white rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3   ${className}`;
@@ -27,7 +28,7 @@ const Input = ({
   } else if (success) {
     inputClasses += `  border-success-500 focus:border-success-300 focus:ring-success-500/20 `;
   } else {
-    inputClasses += ` bg-transparent text-gray-800 border-gray-300 focus:border-brand-300 focus:ring-brand-500/20 `;
+    inputClasses += ` bg-transparent text-gray-800 border-gray-300 focus:border-sky-300 focus:ring-sky-500/20 `;
   }
 
   return (
@@ -39,6 +40,7 @@ const Input = ({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
+        onKeyDown={onKeyDown}
         min={min}
         max={max}
         step={step}
@@ -51,7 +53,7 @@ const Input = ({
         <p
           className={`mt-1.5 text-xs ${
             error
-              ? "text-error-500"
+              ? "text-red-500"
               : success
               ? "text-success-500"
               : "text-gray-500"
