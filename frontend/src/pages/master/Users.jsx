@@ -3,30 +3,319 @@ import useMasterDataService from '../../services/MasterDataService'
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '../../components/ui/table/Table'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEdit, faSearch, faTrash } from '@fortawesome/free-solid-svg-icons'
-import { Card, CardContent } from '../../components/ui/card/Card'
+import { Card, CardContent, CardHeader } from '../../components/ui/card/Card'
 import Breadcrumb from '../../components/ui/breadcrumb/Breadcrumb'
 import Input from "../../components/forms/Input"
+import Button from "../../components/forms/Button"
+import { Modal } from "../../components/ui/modal/Modal"
+import Select from '../../components/forms/Select'
 
 const Users = () => {
-    const { getMasterData } = useMasterDataService()
+    const { getMasterData, createMasterData, updateMasterDataById, deleteMasterDataById } = useMasterDataService()
     const [usersData, setUsersData] = useState([])
+    const [optionRoles, setOptionRoles] = useState([])
+    const [showModal, setShowModal] = useState({
+        type: "add",
+        add: false,
+        update: false,
+        delete: false,
+    })
+    const [idUser, setIdUser] = useState()
+    const [form, setForm] = useState({
+        name: "",
+        username: "",
+        email: "",
+        password: "",
+        passwordConfirmation: "",
+        roleId: null
+    })
+    const [errors, setErrors] = useState({
+        name: "",
+        username: "",
+        email: "",
+        password: "",
+        passwordConfirmation: "",
+        roleId: ""
+    })
 
     const fetchMasterData = async() => {
         try {
             const response = await getMasterData("users")
-            console.log(response?.data?.data)
             setUsersData(response?.data?.data)
         } catch (error) {
             console.error(error)
         }
     }
 
+    const fetchOptionsRoles = async() => {
+        try {
+            const response = await getMasterData("roles")
+            const options = response?.data?.data?.map((item)=>{
+                return{
+                    label: item.ROLENAME,
+                    value: item.ID
+                }
+            })
+            setOptionRoles(options)
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
     useEffect(()=>{
+        fetchOptionsRoles()
         fetchMasterData()
     }, [])
+
+    const handleOpenModal = (type, data) => {
+        setIdUser(data.ID)
+        setForm({
+            ...form,
+            name: data?.NAME || "",
+            username: data?.USERNAME || "",
+            email: data?.EMAIL || "",
+            roleId: data?.ROLE_ID || null,
+            password: "",
+            passwordConfirmation: ""
+        })
+        setShowModal({
+            ...showModal,
+            type: type,
+            [type]: true
+        })
+    } 
+
+    useEffect(()=>{
+        console.log("current form: ", form)
+    }, [form])
+
+    const handleCloseModal = (type) => {
+        setShowModal({
+            ...showModal,
+            type: type,
+            [type]: false
+        })
+    }
+
+    const handleChangeInput = (e) => {
+        const { name, value } = e.target
+        setErrors({
+            ...errors,
+            [name]: ""
+        })
+        setForm({ 
+            ...form,
+            [name]: value
+        })
+    }
+
+    const handleChangeSelect = (name, value) => {
+        setErrors({
+            ...errors,
+            [name]: ""
+        })
+        setForm({
+            ...form,
+            [name]: value
+        })
+    }
+
+    const clearErrors = () => {
+        setErrors({
+            name: "",
+            username: "",
+            email: "",
+            password: "",
+            passwordConfirmation: "",
+            roleId: ""
+        })
+    }
+
+    const formValidation = () => {
+        const errorForm = {}
+        const template = " cant't be empty!"
+
+        // Validation on Form Update and Form Add
+        if(form.name === ""){
+            errorForm.name = "Name" + template
+        }
+        if(form.username === ""){
+            errorForm.username = "Username" + template
+        }
+        if(form.email === ""){
+            errorForm.email = "Email" + template
+        }
+        if(form.roleId === null){
+            errorForm.roleId = "Role" + template
+        }
+
+        // Validation on Form Add
+        if(showModal.type === "add"){
+            if(form.password === ""){
+                errorForm.password = "Password" + template
+            }
+            if(form.passwordConfirmation === ""){
+                errorForm.passwordConfirmation = "Password confirmation" + template
+            }
+            if(form.password !== form.passwordConfirmation){
+                errorForm.passwordConfirmation = "Password doesn't match!"
+            }
+        }
+
+        // If there are errors, return false
+        if (Object.keys(errorForm).length > 0) {
+            setErrors({...errors, ...errorForm})
+            return false;
+        }else{
+            clearErrors()
+            return true;
+        }   
+    }
+
+    const handleEnter = (e) => {
+        if(e.key === "Enter"){
+            handleSubmit()
+        }
+    }
+
+    const handleSubmit = async() => {
+        try {
+            const isValid = formValidation()
+            if(!isValid && showModal.type !== "delete"){
+                return
+            } 
+            let response
+            console.log("form: ", form)
+            if(showModal.type === "add"){
+                response = await createMasterData('user', form)
+            }else if(showModal.type === "update"){
+                response = await updateMasterDataById('user', idUser, form)
+            }else if(showModal.type === "delete"){
+                response = await deleteMasterDataById('user', idUser)
+            }
+            fetchMasterData()
+            handleCloseModal(showModal.type)
+            console.log("response submit: ", response)
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+    const renderModal = (type, data) => {
+        return(
+            <Modal
+                isOpen={showModal?.[type]}
+                onClose={()=>handleCloseModal(type)}
+            >
+                <Card>
+                    <CardHeader>{type==="add" ? "Add" : type==="update" ? "Update" : type==="delete" ? "Delete" : ""} User</CardHeader>
+                    <CardContent>
+                        {(type==="add" || type==="update") && (
+                            <div>
+                                <div className='mb-4'>
+                                    <label>Name</label>
+                                    <Input
+                                        placeholder={"Name"}
+                                        name={"name"}
+                                        onChange={handleChangeInput}
+                                        value={form.name}
+                                        error={errors?.name !== ""}
+                                        hint={errors?.name}
+                                        onKeyDown={handleEnter}
+                                    />
+                                </div>
+                                <div className='mb-4'>
+                                    <label>Username</label>
+                                    <Input
+                                        placeholder={"Username"}
+                                        name={"username"}
+                                        onChange={handleChangeInput}
+                                        value={form.username}
+                                        error={errors?.username !== ""}
+                                        hint={errors?.username}
+                                        onKeyDown={handleEnter}
+                                        disabled={showModal.type !== "add"}
+                                    />
+                                </div>
+                                <div className='mb-4'>
+                                    <label>Email</label>
+                                    <Input
+                                        placeholder={"Email"}
+                                        name={"email"}
+                                        onChange={handleChangeInput}
+                                        value={form.email}
+                                        error={errors?.email !== ""}
+                                        hint={errors?.email}
+                                        onKeyDown={handleEnter}
+                                        disabled={showModal.type !== "add"}
+                                    />
+                                </div>
+                                <div className='mb-4'>
+                                    <label>Role</label>
+                                    <Select
+                                        name='roleId'
+                                        options={optionRoles}
+                                        defaultValue={form.roleId}
+                                        onChange={handleChangeSelect}
+                                        error={errors?.roleId !== ""}
+                                        hint={errors?.roleId}
+                                    />
+                                </div>
+                                {type === "add" && (
+                                    <div>
+                                        <div className='mb-4'>
+                                            <label>Password</label>
+                                            <Input
+                                                placeholder={"Password"}
+                                                name={"password"}
+                                                onChange={handleChangeInput}
+                                                value={form.password}
+                                                error={errors?.password !== ""}
+                                                hint={errors?.password}
+                                                onKeyDown={handleEnter}
+                                            />
+                                        </div>
+                                        <div className='mb-4'>
+                                            <label>Password Confirmation</label>
+                                            <Input
+                                                placeholder={"Re-type your password"}
+                                                name={"passwordConfirmation"}
+                                                onChange={handleChangeInput}
+                                                value={form.passwordConfirmation}
+                                                error={errors?.passwordConfirmation !== ""}
+                                                hint={errors?.passwordConfirmation}
+                                                onKeyDown={handleEnter}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                                <div className='flex items-center justify-end gap-4'>
+                                    <Button variant='outline' onClick={()=>handleCloseModal(showModal.type)}>Cancel</Button>
+                                    <Button variant='primary' onClick={handleSubmit}>{type==="add" ? "Add" : type==="update" ? "Update" : ""}</Button>
+                                </div>
+                            </div>
+                        )}
+                        {type==="delete" && (
+                            <div>
+                                <h1>Are you sure want to delete user: {data.name}</h1>
+                                <div className='flex items-center justify-end gap-4'>
+                                    <Button onClick={()=>handleCloseModal(showModal.type)} variant='outline'>Cancel</Button>
+                                    <Button onClick={handleSubmit} variant='red'>Delete</Button>
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </Modal>
+        )
+    }
+
   return (
     <div className=''>
         <Breadcrumb subPage={"Master"} pageTitle={"Users"}/>
+
+        {/* Render modal */}
+        {renderModal(showModal.type, form)}
 
         {/* Card */}
         <div className='mt-4'>
@@ -34,7 +323,7 @@ const Users = () => {
                 <CardContent>
                     {/* Button and Search */}
                     <div className='mb-4 flex justify-between'>
-                        <button className='bg-green-500 px-10 py-1 rounded-md text-white'>Add new</button>
+                        <Button onClick={()=>handleOpenModal("add", form)}>Add new</Button>
                         <Input
                             placeholder={"Search"}
                             endIcon={<FontAwesomeIcon icon={faSearch}/>}
@@ -62,8 +351,8 @@ const Users = () => {
                                         <TableCell>{item.ROLENAME}</TableCell>
                                         <TableCell>
                                             <div className='flex items-center gap-4'>
-                                                <button className='bg-blue-500 hover:bg-blue-700 cursor-pointer p-3 text-white rounded-md '><FontAwesomeIcon icon={faEdit}/></button>
-                                                <button className='bg-red-500 hover:bg-red-700 cursor-pointer p-3 text-white rounded-md '><FontAwesomeIcon icon={faTrash}/></button>
+                                                <Button variant='blue' onClick={()=>handleOpenModal("update", item)}><FontAwesomeIcon icon={faEdit}/></Button>
+                                                <Button variant='red' onClick={()=>handleOpenModal("delete", item)}><FontAwesomeIcon icon={faTrash}/></Button>
                                             </div>
                                         </TableCell>
                                     </TableRow>
