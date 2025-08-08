@@ -9,17 +9,55 @@ const Login = () => {
     username: "",
     password: ""
   })
+  const [errors, setErrors] = useState({
+    username: "",
+    password: ""
+  })
 
   const { login } = useAuthService()
   const navigate = useNavigate()
 
+  const isFormValid = () => {
+    const errorForms = {}
+
+    // Check if any form doesn't filled
+    if(form.username === ""){
+      errorForms.username = "Username can't be empty!"
+    }
+    if(form.password === ""){
+      errorForms.password = "Password can't be empty!"
+    }
+    
+    // If there are errors, return false
+    if (Object.keys(errorForms).length > 0) {
+      setErrors(errorForms)
+      return false;
+    }else{
+      setErrors({
+        username: "",
+        password: ""
+      })
+      return true;
+    }
+  }
+
   const handleLogin = async() => {
     try {
+      // If there are errors in form
+      const isValid = isFormValid() 
+      if(!isValid){
+        return
+      }
+
+      // Login auth
       const response = await login(form)
-      console.log("response login: ", response)
       const data = response?.data
+
+      // Set token into localStorage
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
+
+      // Navigate to home page
       navigate("/home")
     } catch (error) {
       console.error(error)
@@ -28,7 +66,15 @@ const Login = () => {
 
   const handleChangeInput = (e) => {
     const { name, value } = e.target
+    setErrors({ ...errors, [name]: ""})
     setForm({ ...form, [name]: value})
+  }
+
+  const handleEnter = (e) => {
+    const key = e.key
+    if(key === "Enter"){
+      handleLogin()
+    }
   }
 
   return (
@@ -42,6 +88,9 @@ const Login = () => {
             value={form.username}
             name='username'
             onChange={handleChangeInput}
+            onKeyDown={handleEnter}
+            error={errors.username !== ""}
+            hint={errors.username}
           />
         </div>
         <div className='mt-4'>
@@ -50,6 +99,9 @@ const Login = () => {
             value={form.password}
             name='password'
             onChange={handleChangeInput}
+            onKeyDown={handleEnter}
+            error={errors.password !== ""}
+            hint={errors.password}
           />
         </div>
         
