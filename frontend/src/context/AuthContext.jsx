@@ -14,13 +14,12 @@ export const AuthProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(localStorage.getItem("accessToken") || null);
   const [refreshToken, setRefreshToken] = useState(localStorage.getItem("refreshToken") || null);
 
-   const setAuthStates = () => {
+  const setAuthStates = () => {
     const storedToken = localStorage.getItem('accessToken')
-    console.log("StoredToken: ", storedToken)
     if (storedToken) {
         try {
             const decoded = jwtDecode(storedToken)
-            if (decoded.exp * 1000 > Date.now()) {
+            if (decoded.exp * 12000 > Date.now()) {
                 setAuth({
                     ...auth,
                     name: decoded.name,
@@ -40,8 +39,6 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('accessToken')
         localStorage.removeItem('refreshToken')
       }
-    }else{
-      // window.location.href = "/login"
     }
   }
 
@@ -69,10 +66,10 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('refreshToken')
     setAuth({
       name: "",
-    username: "",
-    email: "",
-    roleId: null,
-    roleName: ""
+      username: "",
+      email: "",
+      roleId: null,
+      roleName: ""
     })
   }
 
@@ -83,7 +80,8 @@ export const AuthProvider = ({ children }) => {
     refreshToken,
     setRefreshToken,
     setTokenAndDecode,
-    clearAuth
+    clearAuth,
+    authIsReady
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
