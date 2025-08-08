@@ -8,9 +8,11 @@ import Breadcrumb from '../../components/ui/breadcrumb/Breadcrumb'
 import Input from '../../components/forms/Input'
 import { Modal } from '../../components/ui/modal/Modal'
 import Button from '../../components/forms/Button'
+import useVerify from '../../hooks/useVerify'
 
 const Roles = () => {
     const { getMasterData, createMasterData, updateMasterDataById, deleteMasterDataById } = useMasterDataService()
+    const { auth } = useVerify()
     const [rolesData, setRolesData] = useState([])
     const [idRole, setIdRole] = useState(null)
     const [form, setForm] = useState({
@@ -26,7 +28,6 @@ const Roles = () => {
     const fetchMasterData = async() => {
         try {
             const response = await getMasterData("roles")
-            console.log("response fetch roles: ", response)
             setRolesData(response?.data?.data)
         } catch (error) {
             console.error(error)
@@ -170,8 +171,8 @@ const Roles = () => {
                                         <TableCell>{item.ROLENAME}</TableCell>
                                         <TableCell>
                                             <div className='flex items-center gap-4'>
-                                                <Button variant='blue' onClick={()=>handleOpenModal("update", item)} ><FontAwesomeIcon icon={faEdit}/></Button>
-                                                <Button variant='red' onClick={()=>handleOpenModal("delete", item)} ><FontAwesomeIcon icon={faTrash}/></Button>
+                                                <Button variant='blue' disabled={auth.roleId === item.ID} onClick={()=>handleOpenModal("update", item)} ><FontAwesomeIcon icon={faEdit}/></Button>
+                                                <Button variant='red' disabled={auth.roleId === item.ID} onClick={()=>handleOpenModal("delete", item)} ><FontAwesomeIcon icon={faTrash}/></Button>
                                             </div>
                                         </TableCell>
                                     </TableRow>
