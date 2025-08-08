@@ -112,8 +112,15 @@ export const deleteRoleById = async(req, res) => {
     try {
         // Get and check params
         const { id } = req.params
+        const currentRoleId = req.user.role_id
+        console.log("Current roleId:", currentRoleId)
         if(!id){
             return res.status(404).json({ message: "ID not found!"})
+        }
+
+        // Check if current role is going to be deleted
+        if(currentRoleId === id){
+          return res.status(400).json({ message: "Can't delete a role that you're using now"})
         }
 
         // Execute query delete
@@ -122,10 +129,11 @@ export const deleteRoleById = async(req, res) => {
             { id: id }
         )
         if(deleted.rowsAffected === 0){
-            return res.status(400).json({ message: "Delete Failed!"})
+            return res.status(400).json({ message: `Delete Failed!`})
         }
-        res.status(200).json({ message: "Role deleted!" })
+        res.status(200).json({ message: `Role deleted!` })
     } catch (error) {
+      console.log("ERROR", error)
         res.status(500).json({ message: "Internal server error!", error: error });
     }
 }
