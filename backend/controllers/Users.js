@@ -56,8 +56,8 @@ export const getUserById = async(req, res) => {
 export const createUser = async(req, res) => {
     try {
         // Get and check request body
-        const { name, username, email, password, passwordConfirmation, role_id } = req.body
-        if(!name || !username || !email || !password ||!passwordConfirmation || !role_id){
+        const { name, username, email, password, passwordConfirmation, roleId } = req.body
+        if(!name || !username || !email || !password ||!passwordConfirmation || !roleId){
             return res.status(400).json({ message: "Please fill all required fields!"})
         }
 
@@ -78,7 +78,7 @@ export const createUser = async(req, res) => {
         }
 
         // Check if role exist
-        const foundRole = await db.execute("SELECT ROLENAME FROM ROLES WHERE id = :role_id", { role_id: role_id })
+        const foundRole = await db.execute("SELECT ROLENAME FROM ROLES WHERE id = :role_id", { role_id: roleId })
         if(foundRole.rows.length === 0){
             return res.status(404).json({ message: "Role invalid!"})
         }
@@ -94,7 +94,7 @@ export const createUser = async(req, res) => {
                 username: username, 
                 email: email, 
                 password: hashedPassword, 
-                role_id: role_id,
+                role_id: roleId,
             }
         )
         res.status(201).json({ message: "User registered successfully!"})
@@ -109,35 +109,41 @@ export const updateUserById = async(req, res) => {
     try {
         // Get and check params and body
         const { id } = req.params
-        const { name, role_id } = req.body
+        const { name, roleId } = req.body
         if(!id){
             return res.status(404).json({ message: "ID not found!" })
         }
-        if(!name && !role_id){
+        if(!name && !roleId){
             return res.status(400),json({ message: "Please fill at least 1 field to update!"})
         }
 
         // Set default query
-        let sql = `UPDATE USERS SET` 
+        let sql = `UPDATE USERS SET ` 
         const updatedFields = []
-        const binds = { id: id}
+        const binds = { id: id }
 
         // Add into query if name and/or role_id exist
         if(name){
             updatedFields.push("NAME = :name") 
             binds.name = name 
         }
-        if(role_id){
+        if(roleId){
             updatedFields.push("ROLE_ID = :role_id")
-            binds.role_id = role_id
+            binds.role_id = roleId
         }
-        sql += updatedFields.join(", ") + `WHERE ID = :id`
+        sql += updatedFields.join(", ") + ` WHERE ID = :id`
+        console.log("sql: ", sql)
 
 
         // Check if user exists
-        const foundUser = await db.execute("SELECT ID, NAME FROM USERS WHERE ID = :id ", { id: id })
+        const foundUser = await db.execute("SELECT ID, NAME, ROLE_ID FROM USERS WHERE ID = :id ", { id: id })
         if(foundUser.rows.length === 0){
             return res.status(404).json({ message: "User not found!"})
+        }
+
+        // Check if there is no changes from body to current
+        if(foundUser.rows[0].NAME === name && foundUser.rows[0].ROLE_ID === roleId){
+            return res.status(400).json({ message: "Can't update data with same value!"})
         }
 
         // Execute update user
