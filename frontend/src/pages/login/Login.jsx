@@ -3,6 +3,7 @@ import Input from '../../components/forms/Input'
 import { useState } from 'react'
 import useAuthService from '../../services/AuthService'
 import { useNavigate } from "react-router"
+import Button from '../../components/forms/Button'
 
 const Login = () => {
   const [form, setForm] = useState({
@@ -52,7 +53,7 @@ const Login = () => {
       // Login auth
       const response = await login(form)
       const data = response?.data
-
+      
       // Set token into localStorage
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
@@ -79,8 +80,10 @@ const Login = () => {
 
   return (
     <div className='bg-slate-200 min-h-dvh flex items-center justify-center'>
-      <div className='bg-white w-[400px] h-[400px] p-10'>
-        <h1 className='text-2xl font-bold'>Login</h1>
+      <div className='bg-white w-[400px] h-[450px] p-10 shadow shadow-gray-400'>
+        <h3 className='text-sm font-semibold text-center'>Welcome to </h3>
+        <h3 className='text-2xl font-bold text-center'>HR Attendance System</h3>
+        <h1 className='text-md font-semibold text-center'>Login</h1>
 
         <div className='mt-10'>
           <label>Username</label>
@@ -106,7 +109,7 @@ const Login = () => {
         </div>
         
         <div className='mt-4'>
-          <button onClick={handleLogin} className='w-full text-center py-3 bg-blue-200'>Login</button>
+          <Button variant="blue" className='w-full' onClick={handleLogin} >Login</Button>
         </div>
 
       </div>
