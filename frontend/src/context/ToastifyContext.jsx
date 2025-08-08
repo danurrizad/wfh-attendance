@@ -24,8 +24,8 @@ export const ToastProvider = ({ children }) => {
 
   return (
     <ToastContext.Provider value={{ showSuccess, showError, showInfo, showWarning }}>
+      <ToastContainer position="top-right" style={{ zIndex: 999999}} autoClose={3000} />
       {children}
-      <ToastContainer position="top-right" autoClose={3000} />
     </ToastContext.Provider>
   );
 };
