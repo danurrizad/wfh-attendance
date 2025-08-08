@@ -71,7 +71,6 @@ const useVerify = () => {
   return{
     auth,
     axiosJWT,
-    authIsReady,
     clearAuth
   }
 }
