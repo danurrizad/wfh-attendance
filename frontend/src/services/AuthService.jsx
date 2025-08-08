@@ -1,8 +1,10 @@
+import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastifyContext";
 import axiosInstance from "../utils/AxiosInstance"
 
 const useAuthService = () => {
     const { showSuccess, showError } = useToast();
+    const { setTokenAndDecode } = useAuth()
 
     // Handle all errors
     const handleError = (error) => {
@@ -17,6 +19,7 @@ const useAuthService = () => {
     const login = async(body) => {
         try {
             const response = await axiosInstance.post("login", body)
+            setTokenAndDecode(response.data.accessToken)
             showSuccess(response?.data?.message)
             return response
         } catch (error) {
