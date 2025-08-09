@@ -33,7 +33,6 @@ export const login = async(req, res) => {
 
         // Check encrypted user password
         const user = foundUser.rows[0]
-        console.log("USER: ", user)
         const isValidated = await bcrypt.compare(password, user.PASSWORD)
         if(!isValidated){
             return res.status(401).json({ message: "Invalid username or password!"})
@@ -70,7 +69,7 @@ export const login = async(req, res) => {
             id: user.ID
         })
 
-        res.status(200).json({ message: `Welcome, ${user.NAME}`, accessToken, refreshToken})
+        res.status(200).json({ message: `Welcome, ${user.NAME}`, accessToken, refreshToken, roleName: user.ROLENAME})
     } catch (error) {
         console.error("ERROR: ", error)
         res.status(500).json({ message: "Internal server error!", error: error})
