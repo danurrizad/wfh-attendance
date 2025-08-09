@@ -4,6 +4,8 @@ import db from "./utils/db.js"
 import rolesRouter from "./routes/Roles.js"
 import usersRouter from "./routes/Users.js"
 import authRouter from "./routes/Auth.js"
+import attendanceRouter from "./routes/Attendance.js"
+import uploadsRouter from "./routes/Uploads.js"
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -37,3 +39,5 @@ app.listen(PORT, () => {
 app.use("/api", rolesRouter)
 app.use("/api", usersRouter)
 app.use("/api", authRouter)
+app.use("/api", attendanceRouter)
+app.use("/", uploadsRouter)
