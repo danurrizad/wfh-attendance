@@ -5,6 +5,7 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [auth, setAuth] = useState({
+    userId: null,
     name: "",
     username: "",
     email: "",
@@ -22,6 +23,7 @@ export const AuthProvider = ({ children }) => {
             if (decoded.exp * 12000 > Date.now()) {
                 setAuth({
                     ...auth,
+                    userId: decoded.userId,
                     name: decoded.name,
                     username: decoded.username,
                     email: decoded.email,
@@ -51,6 +53,7 @@ export const AuthProvider = ({ children }) => {
     const decoded= jwtDecode(accessToken) 
     setAuth({
       ...auth,
+      userId: decoded.userId,
       name: decoded.name,
       username: decoded.username,
       email: decoded.email,
@@ -65,6 +68,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
     setAuth({
+      userId: null,
       name: "",
       username: "",
       email: "",
