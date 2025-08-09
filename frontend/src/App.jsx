@@ -6,6 +6,7 @@ import AppLayout from "./layout/AppLayout";
 import Roles from "./pages/master/Roles";
 import Users from "./pages/master/Users";
 import Attendance from "./pages/attendance/Attendance";
+import HomeEmployee from "./pages/home/HomeEmployee";
 
 function App() {
 
@@ -16,13 +17,13 @@ function App() {
           <Route path="/login" element={<Login />} />,
           
           <Route element={<AppLayout/>}>
-            <Route path="/home" element={<Home />} />,
+            <Route path="/home/admin" element={<Home />} />,
             <Route path="/attendances" element={<Attendance />} />,
             <Route path="/master/roles" element={<Roles />} />,
             <Route path="/master/users" element={<Users />} />,
             {/* <Route path="*" element={<NotFound />} / > */}
           </Route>
-
+          <Route path="/home" element={<HomeEmployee/>}/>
         </Routes>
       </Router>
     </>
