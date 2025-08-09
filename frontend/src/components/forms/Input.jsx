@@ -1,3 +1,7 @@
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useState } from "react";
+
 const Input = ({
   type = "text",
   id,
@@ -14,7 +18,8 @@ const Input = ({
   error = false,
   hint,
   endIcon,
-  onKeyDown
+  onKeyDown,
+  isPassword
 }) => {
 
   let inputClasses = ` h-11 w-full bg-white rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3   ${className}`;
@@ -31,10 +36,20 @@ const Input = ({
     inputClasses += ` bg-transparent text-gray-800 border-gray-300 focus:border-sky-300 focus:ring-sky-500/20 `;
   }
 
+  const [inputType, setInputType] = useState("password")
+
+  const clickEye = () => {
+    if(inputType === "text"){
+      setInputType("password")
+    }else{
+      setInputType("text")
+    }
+  }
+
   return (
     <div className="relative">
       <input
-        type={type}
+        type={isPassword ? inputType : type}
         id={id}
         name={name}
         placeholder={placeholder}
@@ -48,6 +63,12 @@ const Input = ({
         className={`${inputClasses} ${endIcon ? "pr-10" : ""}`}
       />
       {endIcon && (<span className="absolute top-1/2 -translate-y-1/2 right-4 text-gray-300">{endIcon}</span>)}
+
+      {isPassword && (
+        <button onClick={clickEye} className="cursor-pointer absolute top-1/2 -translate-y-1/2 right-5">
+          <FontAwesomeIcon icon={inputType === "text" ? faEyeSlash : faEye}/>
+        </button>
+      )}
 
       {hint && (
         <p
