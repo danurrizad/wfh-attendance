@@ -17,7 +17,7 @@ const Sidebar = () => {
     },
     {
       name: "Home",
-      href: "/home",
+      href: "/home/admin",
       icon: faHome
     },
     {
