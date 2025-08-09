@@ -58,8 +58,14 @@ const Login = () => {
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
 
+      const roleUser = data?.roleName
+
       // Navigate to home page
-      navigate("/home")
+      if(roleUser === "HR"){
+        navigate("/home/admin")
+      }else{
+        navigate("/home")
+      }
     } catch (error) {
       console.error(error)
     }
@@ -105,6 +111,7 @@ const Login = () => {
             onKeyDown={handleEnter}
             error={errors.password !== ""}
             hint={errors.password}
+            isPassword
           />
         </div>
         
