@@ -41,7 +41,7 @@ export const login = async(req, res) => {
         // If validated
         const accessToken = jwt.sign(
             {
-                id: user.ID,
+                userId: user.ID,
                 name: user.NAME,
                 username: user.USERNAME,
                 email: user.EMAIL,
@@ -54,7 +54,7 @@ export const login = async(req, res) => {
 
         const refreshToken = jwt.sign(
             {
-                id: user.ID,
+                userId: user.ID,
                 name: user.NAME,
                 username: user.USERNAME,
                 email: user.EMAIL,
@@ -117,7 +117,7 @@ export const refreshToken = async(req, res) => {
         // Sign a new refresh token to user
         const newRefreshToken = jwt.sign(
             {
-                id: foundUser.ID,
+                userId: foundUser.ID,
                 name: foundUser.NAME,
                 username: foundUser.USERNAME,
                 email: foundUser.EMAIL,
