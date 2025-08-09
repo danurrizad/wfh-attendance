@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import useAuthService from '../../services/AuthService'
 import { useNavigate } from 'react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -22,6 +22,13 @@ const Header = () => {
       console.error(error)
     }
   }
+
+  // Lock HR pages
+  // useEffect(()=>{
+  //   if(auth.roleName !== "HR"){
+  //     navigate("/login")
+  //   }
+  // }, [auth])
 
   return (
     <div className='w-screen fixed top-0 z-0 flex justify-between items-center p-4 px-10 bg-white h-[100px] border-b-1 border-gray-300'>
