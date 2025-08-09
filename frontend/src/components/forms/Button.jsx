@@ -24,6 +24,8 @@ const Button = ({
       "bg-blue-500 text-white shadow-theme-xs hover:bg-blue-600 disabled:bg-blue-300",
     red:
       "bg-red-500 text-white shadow-theme-xs hover:bg-red-600 disabled:bg-red-300",
+    yellow:
+      "bg-yellow-500 text-white shadow-theme-xs hover:bg-yellow-600 disabled:bg-yellow-300",
     outline:
       "bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 ",
   };
