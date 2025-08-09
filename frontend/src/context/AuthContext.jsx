@@ -81,7 +81,6 @@ export const AuthProvider = ({ children }) => {
     setRefreshToken,
     setTokenAndDecode,
     clearAuth,
-    authIsReady
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
