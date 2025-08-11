@@ -179,31 +179,33 @@ const Roles = () => {
                             onChange={(e)=>setSearchQ(e.target.value)}
                         />
                     </div>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableCell>No</TableCell>
-                                <TableCell>Role Name</TableCell>
-                                <TableCell>Action</TableCell>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {(rolesData.length > 0 && !loading) && rolesData.map((item, index)=>{
-                                return(
-                                    <TableRow key={index}>
-                                        <TableCell>{index+1}</TableCell>
-                                        <TableCell>{item.ROLENAME}</TableCell>
-                                        <TableCell>
-                                            <div className='flex items-center gap-4'>
-                                                <Button variant='blue' disabled={auth.roleId === item.ID} onClick={()=>handleOpenModal("update", item)} ><FontAwesomeIcon icon={faEdit}/></Button>
-                                                <Button variant='red' disabled={auth.roleId === item.ID} onClick={()=>handleOpenModal("delete", item)} ><FontAwesomeIcon icon={faTrash}/></Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                )
-                            })}
-                        </TableBody>
-                    </Table>
+                    <div className='overflow-x-auto'>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableCell>No</TableCell>
+                                    <TableCell>Role Name</TableCell>
+                                    <TableCell>Action</TableCell>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {(rolesData.length > 0 && !loading) && rolesData.map((item, index)=>{
+                                    return(
+                                        <TableRow key={index}>
+                                            <TableCell>{index+1}</TableCell>
+                                            <TableCell>{item.ROLENAME}</TableCell>
+                                            <TableCell>
+                                                <div className='flex items-center gap-4'>
+                                                    <Button variant='blue' disabled={auth.roleId === item.ID} onClick={()=>handleOpenModal("update", item)} ><FontAwesomeIcon icon={faEdit}/></Button>
+                                                    <Button variant='red' disabled={auth.roleId === item.ID} onClick={()=>handleOpenModal("delete", item)} ><FontAwesomeIcon icon={faTrash}/></Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    )
+                                })}
+                            </TableBody>
+                        </Table>
+                    </div>
                     <LoadingTable data={rolesData} loading={loading}/>
                     <div className="mt-4">
                         <Pagination

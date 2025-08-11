@@ -359,37 +359,39 @@ const Users = () => {
                             onChange={(e)=>setSearchQ(e.target.value)}
                         />
                     </div>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableCell>No</TableCell>
-                                <TableCell>Name</TableCell>
-                                <TableCell>Username</TableCell>
-                                <TableCell>Email</TableCell>
-                                <TableCell>Role Name</TableCell>
-                                <TableCell>Action</TableCell>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {(usersData.length > 0 && !loading) && usersData.map((item, index)=>{
-                                return(
-                                    <TableRow key={index}>
-                                        <TableCell>{index+1}</TableCell>
-                                        <TableCell>{item.NAME}</TableCell>
-                                        <TableCell>{item.USERNAME}</TableCell>
-                                        <TableCell>{item.EMAIL}</TableCell>
-                                        <TableCell>{item.ROLENAME}</TableCell>
-                                        <TableCell>
-                                            <div className='flex items-center gap-4'>
-                                                <Button variant='blue' onClick={()=>handleOpenModal("update", item)}><FontAwesomeIcon icon={faEdit}/></Button>
-                                                <Button variant='red' onClick={()=>handleOpenModal("delete", item)}><FontAwesomeIcon icon={faTrash}/></Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                )
-                            })}
-                        </TableBody>
-                    </Table>
+                    <div className='overflow-x-auto'>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableCell>No</TableCell>
+                                    <TableCell>Name</TableCell>
+                                    <TableCell>Username</TableCell>
+                                    <TableCell>Email</TableCell>
+                                    <TableCell>Role Name</TableCell>
+                                    <TableCell>Action</TableCell>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {(usersData.length > 0 && !loading) && usersData.map((item, index)=>{
+                                    return(
+                                        <TableRow key={index}>
+                                            <TableCell>{index+1}</TableCell>
+                                            <TableCell>{item.NAME}</TableCell>
+                                            <TableCell>{item.USERNAME}</TableCell>
+                                            <TableCell>{item.EMAIL}</TableCell>
+                                            <TableCell>{item.ROLENAME}</TableCell>
+                                            <TableCell>
+                                                <div className='flex items-center gap-4'>
+                                                    <Button variant='blue' onClick={()=>handleOpenModal("update", item)}><FontAwesomeIcon icon={faEdit}/></Button>
+                                                    <Button variant='red' onClick={()=>handleOpenModal("delete", item)}><FontAwesomeIcon icon={faTrash}/></Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    )
+                                })}
+                            </TableBody>
+                        </Table>
+                    </div>
                     <LoadingTable data={usersData} loading={loading}/>
                     <div className="mt-4">
                         <Pagination
