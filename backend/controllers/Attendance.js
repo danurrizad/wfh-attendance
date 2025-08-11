@@ -3,41 +3,86 @@ import moment from "moment-timezone"
 
 export const getAttendances = async(req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const q = req.query.q || '';
+        const offset = (page - 1) * limit;
+        let binds = {}
+
+        // Base query for counting data
+        let baseQuery = `
+            FROM
+                ATTENDANCES A
+            LEFT JOIN
+                USERS U ON A.USER_ID = U.ID
+        `;
+
+        // Add search condition q
+        let whereClause = '';
+        if (q) {
+            whereClause = `WHERE LOWER(U.NAME) LIKE '%' || LOWER(:q) || '%'`;
+            binds.q = q
+        }
+
+        // Get the total count data
+        const totalRowsResult = await db.execute(`
+            SELECT COUNT(*) AS TOTAL_ROWS
+            ${baseQuery}
+            ${whereClause}
+        `,  binds );
+        const totalRows = totalRowsResult.rows[0].TOTAL_ROWS;
+        const totalPages = Math.ceil(totalRows / limit);
+
+        // Fetch the paginated data
+        binds.offset = offset
+        binds.limit = limit
         const foundAll = await db.execute(`
             SELECT 
                 A.ID,
                 A.USER_ID,
                 U.NAME,
                 A.CLOCKIN_DATE,
-                A.IMAGE_PROOF
-            FROM
-                ATTENDANCES A
-            LEFT JOIN
-                USERS U ON A.USER_ID = U.ID
-            ORDER BY
-                A.ID
-            `)
-        if(foundAll.rows.length === 0){
-            return res.status(404).json({ message: "No data found!" })
+                A.CLOCKOUT_DATE,
+                A.CLOCKIN_IMAGE_PROOF,
+                A.CLOCKOUT_IMAGE_PROOF
+            ${baseQuery}
+            ${whereClause}
+            ORDER BY A.ID
+            OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY
+        `,  binds );
+
+        if (foundAll.rows.length === 0) {
+            return res.status(404).json({ message: "No data found!" });
         }
+
         const attendances = foundAll.rows.map(row => {
             return {
                 ID: row.ID,
                 USER_ID: row.USER_ID,
                 NAME: row.NAME,
                 CLOCKIN_DATE: row.CLOCKIN_DATE,
-                IMAGE_PROOF: row.IMAGE_PROOF ? row.IMAGE_PROOF.toString("base64") : null
+                CLOCKOUT_DATE: row.CLOCKOUT_DATE,
+                CLOCKIN_IMAGE_PROOF: row.CLOCKIN_IMAGE_PROOF ? row.CLOCKIN_IMAGE_PROOF.toString("base64") : null,
+                CLOCKOUT_IMAGE_PROOF: row.CLOCKOUT_IMAGE_PROOF ? row.CLOCKOUT_IMAGE_PROOF.toString("base64") : null
             };
         });
-        // console.log("data: ", foundAll)
-        res.status(200).json({ message: "All attendances data found!", data: attendances})
+
+        res.status(200).json({ 
+            message: "All attendances data found!", 
+            data: attendances,
+            pagination: {
+                page: page,
+                limit: limit,
+                totalPage: totalPages,
+            }
+        });
     } catch (error) {
-        console.log(error)
-        res.status(500).json({ message: "Internal server error!", error: error.message })
+        console.log(error);
+        res.status(500).json({ message: "Internal server error!", error: error.message });
     } 
 }
 
-export const createAttendance = async (req, res) => {
+export const createAttendanceClockIn = async (req, res) => {
     try {
         const { userId } = req.body; 
 
@@ -53,8 +98,18 @@ export const createAttendance = async (req, res) => {
         const localDateTime = moment().tz("Asia/Jakarta")
         const formattedDateTime = localDateTime.format("YYYY-MM-DD HH:mm:ss")
 
+        // Check if already clock in for today
+        const userAttendance = await db.execute("SELECT CLOCKIN_DATE FROM ATTENDANCES WHERE USER_ID = :userId", {
+            userId: userId
+        })
+        const userClockInDateToday = userAttendance?.rows[0]?.CLOCKIN_DATE?.split(" ")[0] || ""
+        const todayDate = formattedDateTime.split(" ")[0]
+        if(userClockInDateToday === todayDate){
+            return res.status(400).json({ message: "You have already clocked in!" })
+        }
+
         const result = await db.execute(
-            `INSERT INTO ATTENDANCES (USER_ID, CLOCKIN_DATE, IMAGE_PROOF) 
+            `INSERT INTO ATTENDANCES (USER_ID, CLOCKIN_DATE, CLOCKIN_IMAGE_PROOF) 
              VALUES (:userId, :clockInDate, :imageProof)`,
             {
                 userId: userId,
@@ -74,3 +129,119 @@ export const createAttendance = async (req, res) => {
         res.status(500).json({ message: "Internal server error!", error: error.message });
     }
 };
+
+export const createAttendanceClockOut = async(req, res) => {
+    try{
+        const { userId } = req.body; 
+        const imagePath = req.file.path;
+
+        if (!userId) {
+            return res.status(400).json({ message: "User not found!" });
+        }
+        if(!imagePath){
+            return res.status(400).json({ message: "Please provide your image capture!"})
+        }
+
+        const localDateTime = moment().tz("Asia/Jakarta")
+        const formattedDateTime = localDateTime.format("YYYY-MM-DD HH:mm:ss")
+
+        // Check if already clock in for today
+        const userAttendance = await db.execute("SELECT CLOCKIN_DATE FROM ATTENDANCES WHERE USER_ID = :userId", {
+            userId: userId
+        })
+        const userClockInDateToday = userAttendance?.rows[0]?.CLOCKIN_DATE?.split(" ")[0] || ""
+        const todayDate = formattedDateTime.split(" ")[0]
+        if(userClockInDateToday !== todayDate){
+            return res.status(400).json({ message: "You have not clock in yet! Please clock in first." })
+        }
+
+        // Check if already clock out for today
+        const userClockOutDateToday = userAttendance?.rows[0]?.CLOCKOUT_DATE?.split(" ")[0] || ""
+        if(userClockOutDateToday === todayDate){
+            return res.status(400).json({ message: "You have already clocked out today!" })
+        }
+
+        const result = await db.execute(
+            `UPDATE 
+                ATTENDANCES 
+            SET 
+                CLOCKOUT_DATE = :clockOutDate, 
+                CLOCKOUT_IMAGE_PROOF = :imageProof 
+            WHERE 
+                USER_ID = :userId
+             `,
+            {
+                userId: userId,
+                clockOutDate: formattedDateTime,
+                imageProof: imagePath
+            }
+        );
+
+        if (result.rowsAffected === 0) {
+            return res.status(400).json({ message: "Failed to Clock-In!" });
+        }
+
+        res.status(201).json({ message: "Success!" });
+
+    } catch (error) {
+        console.log("error create: ", error);
+        res.status(500).json({ message: "Internal server error!", error: error.message });
+    }
+}
+
+export const checkStatusToday = async(req, res) => {
+    try {
+        const { userId } = req.params
+        if(!userId){
+            return res.status(400).json({ message: "User ID is required!" })
+        }
+        if(isNaN(userId)){
+            return res.status(400).json({ message: "Invalid user ID!"})
+        }
+
+        // Get today string
+        const localDateTime = moment().tz("Asia/Jakarta")
+        const formattedDateTime = localDateTime.format("YYYY-MM-DD HH:mm:ss")
+
+        // Find attendance
+        const foundAttendance = await db.execute(`
+            SELECT USER_ID, CLOCKIN_DATE, CLOCKOUT_DATE 
+            FROM ATTENDANCES 
+            WHERE USER_ID = :userId 
+            AND TRUNC(TO_DATE(CLOCKIN_DATE, 'YYYY-MM-DD HH24:MI:SS')) = TRUNC(TO_DATE(:formattedDateTime, 'YYYY-MM-DD HH24:MI:SS'))
+            `, {
+                userId: userId,
+                formattedDateTime: formattedDateTime
+            })
+
+        // If there is no attendance
+        if(foundAttendance.rows.length === 0){
+            return res.status(200).json({ 
+                message: "Status user found!", 
+                data: {
+                    status: "NOT CLOCKED IN",
+                    clockInDate: "",
+                    clockOutDate: ""
+                }
+            })
+        }
+
+        const dataAttendance = foundAttendance.rows[0]
+        
+        const status = dataAttendance.CLOCKOUT_DATE !== null ? "CLOCKED OUT" : "CLOCKED IN"
+        
+        // If there is 
+        res.status(200).json({
+            message: "Status user found!",
+            data: {
+                status: status,
+                clockInDate: dataAttendance.CLOCKIN_DATE,
+                clockOutDate: dataAttendance.CLOCKOUT_DATE
+            }
+        })
+            
+    } catch (error) {
+        console.log("error checking status: ", error)
+        res.status(500).json({ message: "Internal server error!", error: error.message})
+    }
+}
