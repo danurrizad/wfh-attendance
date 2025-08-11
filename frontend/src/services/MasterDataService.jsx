@@ -16,9 +16,9 @@ const useMasterDataService = () => {
         throw error
     }
 
-    const getMasterData = async(api) => {
+    const getMasterData = async(api, page, limit, q) => {
         try {
-            const response = await axiosJWT.get(api, {
+            const response = await axiosJWT.get(`${api}?page=${page}&limit=${limit}&q=${q}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
