@@ -62,7 +62,7 @@ const Login = () => {
 
       // Navigate to home page
       if(roleUser === "HR"){
-        navigate("/home/admin")
+        navigate("/attendances")
       }else{
         navigate("/home")
       }
