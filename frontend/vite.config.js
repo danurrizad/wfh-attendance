@@ -9,6 +9,6 @@ export default defineConfig({
     tailwindcss()
   ],
   server: {
-    port: 5091, // 👈 change this to whatever port you want
+    port: 3000, // change this to whatever port you want
   },
 })
