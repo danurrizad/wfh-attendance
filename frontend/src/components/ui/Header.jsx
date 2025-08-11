@@ -1,4 +1,3 @@
-import React, { useEffect } from 'react'
 import useAuthService from '../../services/AuthService'
 import { useNavigate } from 'react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -14,8 +13,6 @@ const Header = () => {
   const handleLogout = async() => {
     try {
       await logout()
-      localStorage.setItem("accessToken", "")
-      localStorage.setItem("refreshToken", "")
       clearAuth()
       navigate("/login")
     } catch (error) {
