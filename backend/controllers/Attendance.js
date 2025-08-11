@@ -6,6 +6,8 @@ export const getAttendances = async(req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const q = req.query.q || '';
+        const startDate = req.query.startDate || '';
+        const endDate = req.query.endDate || '';
         const offset = (page - 1) * limit;
         let binds = {}
 
@@ -20,8 +22,33 @@ export const getAttendances = async(req, res) => {
         // Add search condition q
         let whereClause = '';
         if (q) {
-            whereClause = `WHERE LOWER(U.NAME) LIKE '%' || LOWER(:q) || '%'`;
+            whereClause = `
+                WHERE LOWER(U.NAME) LIKE '%' || LOWER(:q) || '%'
+                OR LOWER(U.USERNAME) LIKE '%' || LOWER(:q) || '%'
+            `
             binds.q = q
+        }
+
+        // Add search condition startDate and endDate
+        if (startDate || endDate) {
+            if (whereClause !== '') {
+                whereClause += ` AND `;
+            } else {
+                whereClause += ` WHERE `;
+            }
+
+            // Add the date conditions
+            if (startDate) {
+                whereClause += `TRUNC(TO_DATE(A.CLOCKIN_DATE, 'YYYY-MM-DD HH24:MI:SS')) >= TO_DATE(:startDate, 'YYYY-MM-DD HH24:MI:SS')`;
+                binds.startDate = startDate;
+            }
+            if (startDate && endDate) {
+                whereClause += ` AND `;
+            }
+            if (endDate) {
+                whereClause += `TRUNC(TO_DATE(A.CLOCKIN_DATE, 'YYYY-MM-DD HH24:MI:SS')) <= TO_DATE(:endDate, 'YYYY-MM-DD HH24:MI:SS')`;
+                binds.endDate = endDate;
+            }
         }
 
         // Get the total count data
@@ -33,6 +60,7 @@ export const getAttendances = async(req, res) => {
         const totalRows = totalRowsResult.rows[0].TOTAL_ROWS;
         const totalPages = Math.ceil(totalRows / limit);
 
+
         // Fetch the paginated data
         binds.offset = offset
         binds.limit = limit
@@ -41,6 +69,7 @@ export const getAttendances = async(req, res) => {
                 A.ID,
                 A.USER_ID,
                 U.NAME,
+                U.USERNAME,
                 A.CLOCKIN_DATE,
                 A.CLOCKOUT_DATE,
                 A.CLOCKIN_IMAGE_PROOF,
@@ -55,11 +84,13 @@ export const getAttendances = async(req, res) => {
             return res.status(404).json({ message: "No data found!" });
         }
 
+        // Change format image into string base64
         const attendances = foundAll.rows.map(row => {
             return {
                 ID: row.ID,
                 USER_ID: row.USER_ID,
                 NAME: row.NAME,
+                USERNAME: row.USERNAME,
                 CLOCKIN_DATE: row.CLOCKIN_DATE,
                 CLOCKOUT_DATE: row.CLOCKOUT_DATE,
                 CLOCKIN_IMAGE_PROOF: row.CLOCKIN_IMAGE_PROOF ? row.CLOCKIN_IMAGE_PROOF.toString("base64") : null,
