@@ -67,9 +67,10 @@ async function setupDatabase() {
     }
     console.log('  All table creation scripts executed.');
 
-    // 3. Create initial role 'HR'
-    console.log('\n3. Creating Role "HR"...');
+    // 3. Create initial role 'HR' and 'EMPLOYEE'
+    console.log('\n3. Creating Role "HR" and "EMPLOYEE"...');
     await db.execute(`INSERT INTO roles (rolename) VALUES (:rolename)`, { rolename: "HR"});
+    await db.execute(`INSERT INTO roles (rolename) VALUES (:rolename)`, { rolename: "EMPLOYEE"});
     console.log('Role "HR" created successfully!');
 
     // 4. Create initial user for 'HR'
