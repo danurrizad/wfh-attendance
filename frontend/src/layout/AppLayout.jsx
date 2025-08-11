@@ -56,7 +56,7 @@ const LayoutContent = () => {
         className={`flex-1 transition-all duration-300 ease-in-out  bg-slate-100 `}
       >
         <Header />
-        <div className={`p-4 mx-auto  md:p-6 mt-20 ${isExpanded ? "ml-50" :"ml-14"} ${isMobile && "ml-0!"} transition-all duration-300`}>
+        <div className={`p-4 mx-auto  md:p-6 mt-20 ${isExpanded ? "ml-50" :"ml-14"} ${isMobile && "ml-0!"} transition-all duration-300 min-h-[calc(100dvh-80px)]`}>
           <Outlet/>
         </div>
       </div>
