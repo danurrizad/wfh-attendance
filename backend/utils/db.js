@@ -24,7 +24,7 @@ const db = {
 
     closeDb: async() => {
         try {
-            await oracledb.getConnection().close(0)
+            await oracledb.getPool().close(0)
             console.log("Database connection closed...")
         } catch (error) {
             console.error("Error in closing database connection: ", error)
