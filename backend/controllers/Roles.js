@@ -2,15 +2,55 @@ import db from "../utils/db.js";
 
 export const getRoles = async (req, res) => {
   try {
-    // Query get all
-    const allRoles = await db.execute("SELECT * FROM ROLES");
-    
-    // If no roles found
-    if (allRoles.rows.length === 0) {
-      return res.status(404).json({ message: "No roles found!" });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const q = req.query.q || '';
+    const offset = (page - 1) * limit;
+    let binds = {}
+
+    // Base query for counting data
+    let baseQuery = `FROM ROLES`;
+
+    // Add search condition q
+    let whereClause = '';
+    if (q) {
+        whereClause = `WHERE LOWER(ROLENAME) LIKE '%' || LOWER(:q) || '%'`;
+        binds.q = q
     }
 
-    res.status(200).json({ message: "All roles found!", data: allRoles.rows });
+    // Get the total count data
+    const totalRowsResult = await db.execute(`
+        SELECT COUNT(*) AS TOTAL_ROWS
+        ${baseQuery}
+        ${whereClause}
+    `,  binds );
+    const totalRows = totalRowsResult.rows[0].TOTAL_ROWS;
+    const totalPages = Math.ceil(totalRows / limit);
+
+    // Fetch the paginated data
+    binds.offset = offset
+    binds.limit = limit
+    const foundRoles = await db.execute(`
+        SELECT *
+        ${baseQuery}
+        ${whereClause}
+        ORDER BY ID
+        OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY
+    `,  binds );
+
+    if (foundRoles.rows.length === 0) {
+        return res.status(404).json({ message: "No data roles found!" });
+    }
+
+    res.status(200).json({ 
+      message: "All roles found!", 
+      data: foundRoles.rows,
+      pagination: {
+          page: page,
+          limit: limit,
+          totalPage: totalPages,
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: "Internal server error!", error: error });
   }

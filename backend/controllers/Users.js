@@ -3,7 +3,43 @@ import db from "../utils/db.js"
 
 export const getUsers = async(req, res) => {
     try {
-        // Execute find Users join Role roleName
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const q = req.query.q || '';
+        const offset = (page - 1) * limit;
+        let binds = {}
+
+        // Base query for counting data
+        let baseQuery = `
+            FROM
+                USERS U
+            LEFT JOIN
+                ROLES R ON U.ROLE_ID = R.ID
+        `;
+
+         // Add search condition q
+        let whereClause = '';
+        if (q) {
+             whereClause = `
+                WHERE LOWER(U.NAME) LIKE '%' || LOWER(:q) || '%' 
+                OR LOWER(U.EMAIL) LIKE '%' || LOWER(:q) || '%' 
+                OR LOWER(U.USERNAME) LIKE '%' || LOWER(:q) || '%'
+            `
+            binds.q = q
+        }
+
+        // Get the total count data
+        const totalRowsResult = await db.execute(`
+            SELECT COUNT(*) AS TOTAL_ROWS
+            ${baseQuery}
+            ${whereClause}
+        `,  binds );
+        const totalRows = totalRowsResult.rows[0].TOTAL_ROWS;
+        const totalPages = Math.ceil(totalRows / limit);
+
+        // Fetch the paginated data
+        binds.offset = offset
+        binds.limit = limit
         const foundUsers = await db.execute(`
             SELECT 
                 U.ID, 
@@ -12,20 +48,25 @@ export const getUsers = async(req, res) => {
                 U.EMAIL, 
                 U.ROLE_ID,
                 R.ROLENAME 
-            FROM 
-                USERS U 
-            LEFT JOIN 
-                ROLES R ON U.ROLE_ID = R.ID
-            ORDER BY
-                U.ID
-        `)
+            ${baseQuery}
+            ${whereClause}
+            ORDER BY U.ID
+            OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY
+        `,  binds );
 
-        // If no users found
-        if(foundUsers.rows.length === 0){
-            return res.status(404).json({ message: "Users not found!"})
+        if (foundUsers.rows.length === 0) {
+            return res.status(404).json({ message: "Data users not found!" });
         }
-        
-        res.status(200).json({ message: "All users found!", data: foundUsers.rows})
+
+        res.status(200).json({ 
+            message: "All users data found!", 
+            data: foundUsers.rows,
+            pagination: {
+                page: page,
+                limit: limit,
+                totalPage: totalPages,
+            }
+        });
     } catch (error) {
         res.status(500).json({ message: "Internal server error!", error: error})
     }
