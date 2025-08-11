@@ -16,7 +16,7 @@ export const SidebarProvider = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isMobile, setIsMobile] = useState(true);
-  const [isMobileExpanded, setIsMobileExpanded] = useState(true);
+  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
 
 
   const toggleSidebar = () => {
