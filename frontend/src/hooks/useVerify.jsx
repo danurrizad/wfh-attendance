@@ -10,6 +10,7 @@ const useVerify = () => {
 
   const axiosJWT = axiosInstance.create()
 
+  // Request interceptor to handle token expiration and refresh
   axiosJWT.interceptors.request.use(
     (config) => {
       const accessToken = localStorage.getItem('accessToken');
@@ -23,6 +24,7 @@ const useVerify = () => {
           setTokenAndDecode(response?.data?.accessToken)
         } catch (error) {
           console.error(error)
+          clearAuth()
           showError("Error refreshing token")
           navigate("/login")
         }
@@ -43,23 +45,21 @@ const useVerify = () => {
       const originalRequest = error.config;
       const refreshToken = localStorage.getItem('refreshToken');
       
-      // Check if the error is due to an expired access token and a refresh token exists
+      // Check error status
       if (error.response.status === 403 && !originalRequest._retry && refreshToken) {
-        originalRequest._retry = true; // Prevents infinite loops
+        originalRequest._retry = true; 
         try {
-          // Call the backend to get a new access token
           const res = await axiosInstance.post('/token', { refreshToken: refreshToken });
-          
-          // If successful, save the new access token and retry the original request
           localStorage.setItem('accessToken', res.data.accessToken);
           originalRequest.headers['Authorization'] = `Bearer ${res.data.accessToken}`;
           return axiosInstance(originalRequest);
         } catch (refreshError) {
-          // If refresh token fails, clear all tokens and force a re-login
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
+          // localStorage.removeItem('accessToken');
+          // localStorage.removeItem('refreshToken');
+          clearAuth()
           showError("Refresh token failed!")
-          // Redirect to the login page here
+
+          // Redirect to the login 
           navigate("/login")
           return Promise.reject(refreshError);
         }

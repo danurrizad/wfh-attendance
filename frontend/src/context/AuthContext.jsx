@@ -5,7 +5,7 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [auth, setAuth] = useState({
-    userId: null,
+    userId: localStorage.getItem("userId") || null,
     name: "",
     username: "",
     email: "",
@@ -64,12 +64,14 @@ export const AuthProvider = ({ children }) => {
       roleName: decoded.rolename,
     })
     localStorage.setItem('accessToken', accessToken)
+    localStorage.setItem('userId', decoded.userId)
   }
 
   // Tambahkan logout opsional
   const clearAuth = () => {
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
+    localStorage.removeItem('userId')
     setAuth({
       userId: null,
       name: "",
