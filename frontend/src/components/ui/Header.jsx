@@ -10,15 +10,6 @@ const Header = () => {
   const { setShowModalLogout } = useAuth()
   const { toggleSidebar, toggleMobileSidebar, isExpanded, isMobile } = useSidebar()
 
- 
-
-  // Lock HR pages
-  // useEffect(()=>{
-  //   if(auth.roleName !== "HR"){
-  //     navigate("/login")
-  //   }
-  // }, [auth])
-
   return (
     <div className='w-screen fixed top-0 z-0 flex justify-between items-center p-4 md:px-10 px-2 bg-white h-[100px] border-b-1 border-gray-300'>
       <div className={`${(isExpanded && !isMobile) ? "ml-[190px]" : "ml-[40px]"} ${isMobile && "ml-0!"} transition-all duration-300 flex items-center gap-4`}>
