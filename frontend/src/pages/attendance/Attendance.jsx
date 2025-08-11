@@ -80,7 +80,7 @@ const Attendance = () => {
         <Card>
           <CardContent>
             <div className='grid grid-cols-4 mb-3'>
-              <div className='col-span-3 flex items-center gap-3'>
+              <div className='sm:col-span-3 col-span-4 flex items-center gap-3'>
                 <label>Period</label>
                 <DatePicker
                   id='date'
@@ -94,7 +94,7 @@ const Attendance = () => {
                   defaultDate={[filter.startDate, filter.endDate]}
                 />
               </div>
-              <div className='col-span-1'>
+              <div className='sm:col-span-1 col-span-4 sm:mt-0 mt-3'>
                 <Input
                   placeholder={"Search"}
                   endIcon={<FontAwesomeIcon icon={faSearch}/>}
@@ -103,44 +103,46 @@ const Attendance = () => {
                 />
               </div>
             </div>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableCell>No</TableCell>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Username</TableCell>
-                  <TableCell>Clock In Date</TableCell>
-                  <TableCell>Clock In Time</TableCell>
-                  <TableCell>Clock In Image Proof</TableCell>
-                  <TableCell>Clock Out Date</TableCell>
-                  <TableCell>Clock Out Time</TableCell>
-                  <TableCell>Clock Out Image Proof</TableCell>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {dataAttendances?.map((item, index)=>{
-                  return(
-                    <TableRow>
-                      <TableCell>{index+1}</TableCell>
-                      <TableCell>{item?.NAME}</TableCell>
-                      <TableCell>{item?.USERNAME}</TableCell>
-                      <TableCell>{item?.CLOCKIN_DATE?.split(" ")[0]}</TableCell>
-                      <TableCell>{item?.CLOCKIN_DATE?.split(" ")[1].slice(0, 8)}</TableCell>
-                      <TableCell>
-                        <img src={`${BACKEND_URL}/${item.CLOCKIN_IMAGE_PROOF}`} width={200}/>
-                      </TableCell>
-                      <TableCell>{item?.CLOCKOUT_DATE?.split(" ")[0]}</TableCell>
-                      <TableCell>{item?.CLOCKOUT_DATE?.split(" ")[1].slice(0, 8)}</TableCell>
-                      <TableCell>
-                        {item.CLOCKOUT_IMAGE_PROOF ? (
-                          <img src={`${BACKEND_URL}/${item.CLOCKOUT_IMAGE_PROOF}`} width={200}/>
-                        ) : ""}
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
+            <div className='overflow-x-auto'>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableCell>No</TableCell>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Username</TableCell>
+                    <TableCell>Clock In Date</TableCell>
+                    <TableCell>Clock In Time</TableCell>
+                    <TableCell>Clock In Image Proof</TableCell>
+                    <TableCell>Clock Out Date</TableCell>
+                    <TableCell>Clock Out Time</TableCell>
+                    <TableCell>Clock Out Image Proof</TableCell>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {dataAttendances?.map((item, index)=>{
+                    return(
+                      <TableRow>
+                        <TableCell>{index+1}</TableCell>
+                        <TableCell>{item?.NAME}</TableCell>
+                        <TableCell>{item?.USERNAME}</TableCell>
+                        <TableCell>{item?.CLOCKIN_DATE?.split(" ")[0]}</TableCell>
+                        <TableCell>{item?.CLOCKIN_DATE?.split(" ")[1].slice(0, 8)}</TableCell>
+                        <TableCell>
+                          <img src={`${BACKEND_URL}/${item.CLOCKIN_IMAGE_PROOF}`} width={200}/>
+                        </TableCell>
+                        <TableCell>{item?.CLOCKOUT_DATE?.split(" ")[0]}</TableCell>
+                        <TableCell>{item?.CLOCKOUT_DATE?.split(" ")[1].slice(0, 8)}</TableCell>
+                        <TableCell>
+                          {item.CLOCKOUT_IMAGE_PROOF ? (
+                            <img src={`${BACKEND_URL}/${item.CLOCKOUT_IMAGE_PROOF}`} width={200}/>
+                          ) : ""}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </div>
             <LoadingTable data={dataAttendances} loading={loading}/>
             <div className="mt-4">
               <Pagination

@@ -6,11 +6,13 @@ import { Card } from "../components/ui/card/Card";
 import Button from "../components/forms/Button";
 import { useAuth } from "../context/AuthContext";
 import useAuthService from "../services/AuthService";
+import { useSidebar } from "../context/SidebarContext";
 
 const LayoutContent = () => {
   const { showModalLogout, setShowModalLogout, clearAuth } = useAuth()
   const { logout } = useAuthService()
   const navigate = useNavigate()
+  const { isExpanded, isMobile } = useSidebar()
 
   const handleLogout = async() => {
     try {
@@ -54,7 +56,7 @@ const LayoutContent = () => {
         className={`flex-1 transition-all duration-300 ease-in-out  bg-slate-100 `}
       >
         <Header />
-        <div className="p-4 mx-auto  md:p-6 mt-20 ml-50 ">
+        <div className={`p-4 mx-auto  md:p-6 mt-20 ${isExpanded ? "ml-50" :"ml-14"} ${isMobile && "ml-0!"} transition-all duration-300`}>
           <Outlet/>
         </div>
       </div>
