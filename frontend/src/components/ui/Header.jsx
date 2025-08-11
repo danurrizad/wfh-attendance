@@ -1,24 +1,14 @@
-import useAuthService from '../../services/AuthService'
-import { useNavigate } from 'react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars, faSignOut, faUserCircle } from "@fortawesome/free-solid-svg-icons"
 import useVerify from "../../hooks/useVerify"
 import Button from "../../components/forms/Button"
+import { useAuth } from '../../context/AuthContext'
 
 const Header = () => {
-  const { auth, clearAuth } = useVerify()
-  const { logout } = useAuthService()
-  const navigate = useNavigate()
+  const { auth } = useVerify()
+  const { setShowModalLogout } = useAuth()
 
-  const handleLogout = async() => {
-    try {
-      await logout()
-      clearAuth()
-      navigate("/login")
-    } catch (error) {
-      console.error(error)
-    }
-  }
+ 
 
   // Lock HR pages
   // useEffect(()=>{
@@ -40,7 +30,7 @@ const Header = () => {
         </div>
       </div>
       <div>
-        <Button variant='outline' startIcon={<FontAwesomeIcon icon={faSignOut}/>} onClick={handleLogout}>Logout</Button>
+        <Button variant='outline' startIcon={<FontAwesomeIcon icon={faSignOut}/>} onClick={()=>setShowModalLogout(true)}>Logout</Button>
       </div>
     </div>
   )

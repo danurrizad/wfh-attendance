@@ -15,6 +15,9 @@ export const AuthProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(localStorage.getItem("accessToken") || null);
   const [refreshToken, setRefreshToken] = useState(localStorage.getItem("refreshToken") || null);
 
+  // Modal logout confirmation
+  const [showModalLogout, setShowModalLogout] = useState(false)
+
   const setAuthStates = () => {
     const storedToken = localStorage.getItem('accessToken')
     if (storedToken) {
@@ -85,6 +88,8 @@ export const AuthProvider = ({ children }) => {
     setRefreshToken,
     setTokenAndDecode,
     clearAuth,
+    showModalLogout,
+    setShowModalLogout
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

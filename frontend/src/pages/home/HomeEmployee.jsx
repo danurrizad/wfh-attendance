@@ -2,27 +2,59 @@ import React, { useEffect, useState } from 'react'
 import Button from '../../components/forms/Button'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowRightFromBracket, faArrowRightToBracket } from '@fortawesome/free-solid-svg-icons'
-import useAuthService from '../../services/AuthService'
 import useVerify from '../../hooks/useVerify'
-import { useNavigate } from 'react-router'
 import { Modal } from '../../components/ui/modal/Modal'
 import { Card, CardContent, CardHeader } from '../../components/ui/card/Card'
 import Webcam from "../../components/face-capture/FaceCapture"
 import useAttendanceDataService from '../../services/AttendanceDataService'
 import { Table, TableBody, TableCell, TableRow } from '../../components/ui/table/Table'
+import { useNavigate } from 'react-router'
+import useAuthService from '../../services/AuthService'
 
 const HomeEmployee = () => {
-    const { logout } = useAuthService()
     const { createAttendanceClockIn, createAttendanceClockOut, checkStatusToday } = useAttendanceDataService()
     const { auth, clearAuth } = useVerify()
-    const navigate = useNavigate()
     const [dataStatus, setDataStatus] = useState([])
     const [imageFile, setImageFile] = useState(null)
+    const [showModalLogout, setShowModalLogout] = useState(false)
     const [showModal, setShowModal] = useState({
         type: "clockIn",
         clockIn: false,
         clockOut: false
     })
+
+    const { logout } = useAuthService()
+    const navigate = useNavigate()
+
+    const handleLogout = async() => {
+        try {
+        await logout()
+        clearAuth()
+        navigate("/login")
+        setShowModalLogout(false)
+        } catch (error) {
+        console.error(error)
+        }
+    }
+
+    const renderModalLogout = () => {
+      return(
+        <Modal
+          isOpen={showModalLogout}
+          onClose={()=>setShowModalLogout(false)}
+        >
+          <Card>
+            <div className='p-4 relative'>
+              <h1>Are you sure want to logout from your account?</h1>
+              <div className='flex items-center gap-4 justify-end mt-4'>
+                <Button variant='outline' onClick={()=>setShowModalLogout(false)}>Cancel</Button>
+                <Button variant='primary' onClick={handleLogout}>Logout</Button>
+              </div>
+            </div>
+          </Card>
+        </Modal>
+      )
+    }
 
     const fetchStatusToday = async() => {
         try {
@@ -38,16 +70,6 @@ const HomeEmployee = () => {
             fetchStatusToday()
         }
     }, [auth])
-
-    const handleLogout = async() => {
-        try {
-            await logout()
-            clearAuth()
-            navigate("/login")
-        } catch (error) {
-            console.error(error)
-        }
-    }
 
     const handleOpenModal = (type) => {
         setShowModal({
@@ -102,8 +124,9 @@ const HomeEmployee = () => {
 
   return (
     <div className='min-h-dvh flex flex-col items-center justify-center'>
-        {/* Render Modal */}
+        {/* Render Modals */}
         {renderModal(showModal.type)}
+        {renderModalLogout()}
 
         <h1 className='text-3xl font-bold'>WFH Attendance System</h1>
         <h3 className='text-md font-semibold'>Welcome to your Work-From-Home attendance system</h3>
@@ -165,7 +188,7 @@ const HomeEmployee = () => {
                     </Button>
                 </div>
                 <div className='mt-4 w-full'>
-                    <Button variant='red' onClick={handleLogout} className='w-full flex justify-center'>
+                    <Button variant='red' onClick={()=>setShowModalLogout(true)} className='w-full flex justify-center'>
                         <FontAwesomeIcon icon={faArrowRightToBracket}/>
                         <p>Logout from Account</p>
                     </Button>
