@@ -65,9 +65,12 @@ const HomeEmployee = () => {
         }
     }
 
+
     useEffect(()=>{
         if(auth.userId !== null){
             fetchStatusToday()
+        }else{
+            window.location.href = "/login"
         }
     }, [auth])
 
