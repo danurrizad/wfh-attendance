@@ -128,16 +128,26 @@ export const createAttendanceClockIn = async (req, res) => {
 
         const localDateTime = moment().tz("Asia/Jakarta")
         const formattedDateTime = localDateTime.format("YYYY-MM-DD HH:mm:ss")
+        const todayDate = localDateTime.format("YYYY-MM-DD")
 
         // Check if already clock in for today
-        const userAttendance = await db.execute("SELECT CLOCKIN_DATE FROM ATTENDANCES WHERE USER_ID = :userId", {
-            userId: userId
+        const userAttendanceToday = await db.execute(`
+            SELECT 
+                USER_ID, CLOCKIN_DATE, CLOCKOUT_DATE 
+            FROM 
+                ATTENDANCES 
+            WHERE 
+                USER_ID = :userId
+                AND TRUNC(TO_DATE(CLOCKIN_DATE, 'YYYY-MM-DD HH24:MI:SS')) = TO_DATE(:todayDate, 'YYYY-MM-DD')
+        `, {
+            userId: userId,
+            todayDate: todayDate,
         })
-        const userClockInDateToday = userAttendance?.rows[0]?.CLOCKIN_DATE?.split(" ")[0] || ""
-        const todayDate = formattedDateTime.split(" ")[0]
-        if(userClockInDateToday === todayDate){
+
+        if(userAttendanceToday.rows.length !== 0){
             return res.status(400).json({ message: "You have already clocked in!" })
         }
+        
 
         const result = await db.execute(
             `INSERT INTO ATTENDANCES (USER_ID, CLOCKIN_DATE, CLOCKIN_IMAGE_PROOF) 
@@ -175,20 +185,26 @@ export const createAttendanceClockOut = async(req, res) => {
 
         const localDateTime = moment().tz("Asia/Jakarta")
         const formattedDateTime = localDateTime.format("YYYY-MM-DD HH:mm:ss")
+        const todayDate = localDateTime.format("YYYY-MM-DD")
+
 
         // Check if already clock in for today
-        const userAttendance = await db.execute("SELECT CLOCKIN_DATE FROM ATTENDANCES WHERE USER_ID = :userId", {
-            userId: userId
+        const userAttendance = await db.execute(`
+            SELECT 
+                USER_ID, CLOCKIN_DATE, CLOCKOUT_DATE 
+            FROM 
+                ATTENDANCES 
+            WHERE 
+                USER_ID = :userId
+                AND TRUNC(TO_DATE(CLOCKIN_DATE, 'YYYY-MM-DD HH24:MI:SS')) = TO_DATE(:todayDate, 'YYYY-MM-DD')
+        `, {
+            userId: userId,
+            todayDate: todayDate,
         })
-        const userClockInDateToday = userAttendance?.rows[0]?.CLOCKIN_DATE?.split(" ")[0] || ""
-        const todayDate = formattedDateTime.split(" ")[0]
-        if(userClockInDateToday !== todayDate){
+        if(userAttendance.rows.length === 0){
             return res.status(400).json({ message: "You have not clock in yet! Please clock in first." })
         }
-
-        // Check if already clock out for today
-        const userClockOutDateToday = userAttendance?.rows[0]?.CLOCKOUT_DATE?.split(" ")[0] || ""
-        if(userClockOutDateToday === todayDate){
+        if(userAttendance.rows[0].CLOCKOUT_DATE !== null){
             return res.status(400).json({ message: "You have already clocked out today!" })
         }
 
@@ -200,11 +216,13 @@ export const createAttendanceClockOut = async(req, res) => {
                 CLOCKOUT_IMAGE_PROOF = :imageProof 
             WHERE 
                 USER_ID = :userId
+                AND TRUNC(TO_DATE(CLOCKIN_DATE, 'YYYY-MM-DD HH24:MI:SS')) = TO_DATE(:todayDate, 'YYYY-MM-DD')
              `,
             {
                 userId: userId,
                 clockOutDate: formattedDateTime,
-                imageProof: imagePath
+                imageProof: imagePath,
+                todayDate: todayDate
             }
         );
 
