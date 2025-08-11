@@ -9,11 +9,22 @@ import Input from '../../components/forms/Input'
 import { Modal } from '../../components/ui/modal/Modal'
 import Button from '../../components/forms/Button'
 import useVerify from '../../hooks/useVerify'
+import { useDebounce } from '../../hooks/useDebounce'
+import LoadingTable from '../../components/ui/table/LoadingTable'
+import Pagination from '../../components/ui/table/Pagination'
 
 const Roles = () => {
+    const [loading, setLoading] = useState(true)
     const { getMasterData, createMasterData, updateMasterDataById, deleteMasterDataById } = useMasterDataService()
     const { auth } = useVerify()
     const [rolesData, setRolesData] = useState([])
+    const [pagination, setPagination] = useState({
+        page: 1,
+        limit: 10,
+        totalPage: 0
+    })
+    const [searchQ, setSearchQ] = useState("")
+    const debouncedQ = useDebounce(searchQ, 1000)
     const [idRole, setIdRole] = useState(null)
     const [form, setForm] = useState({
         roleName: ""
@@ -27,10 +38,22 @@ const Roles = () => {
 
     const fetchMasterData = async() => {
         try {
-            const response = await getMasterData("roles")
-            setRolesData(response?.data?.data)
+            setLoading(true)
+            const response = await getMasterData("roles", pagination.page, pagination.limit, searchQ)
+            const resData = response?.data?.data
+            const resPagination = response?.data?.pagination
+            setRolesData(resData)
+            setPagination(resPagination)
         } catch (error) {
+            setRolesData([])
+            setPagination({
+                ...pagination,
+                page: 0,
+                totalPage: 0
+            })
             console.error(error)
+        } finally{
+            setLoading(false)
         }
     }
 
@@ -40,7 +63,6 @@ const Roles = () => {
     }
 
     const handleOpenModal = (type, data) => {
-        console.log("DATA: ", data)
         setShowModal({ 
             ...showModal, 
             type: type, 
@@ -90,7 +112,7 @@ const Roles = () => {
 
     useEffect(()=>{
         fetchMasterData()
-    }, [])
+    }, [pagination.page, pagination.limit, debouncedQ])
 
     const renderModal = (type, data) => {
         return(
@@ -153,6 +175,8 @@ const Roles = () => {
                         <Input
                             placeholder={"Search"}
                             endIcon={<FontAwesomeIcon icon={faSearch}/>}
+                            value={searchQ}
+                            onChange={(e)=>setSearchQ(e.target.value)}
                         />
                     </div>
                     <Table>
@@ -164,7 +188,7 @@ const Roles = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {rolesData.map((item, index)=>{
+                            {(rolesData.length > 0 && !loading) && rolesData.map((item, index)=>{
                                 return(
                                     <TableRow key={index}>
                                         <TableCell>{index+1}</TableCell>
@@ -180,6 +204,22 @@ const Roles = () => {
                             })}
                         </TableBody>
                     </Table>
+                    <LoadingTable data={rolesData} loading={loading}/>
+                    <div className="mt-4">
+                        <Pagination
+                            page={pagination.page}
+                            totalPage={pagination.totalPage}
+                            onPageChange={(e)=>{
+                                setPagination({...pagination, page: e})
+                            }}
+                            showLimit
+                            onLimitChange={(e)=>{
+                                setPagination({ ...pagination, limit: e, page: 1})
+                            }}
+                            limit={pagination.limit}
+                            options={[10, 25, 50]}
+                        />
+                    </div>
                 </CardContent>
             </Card>
         </div>

@@ -9,10 +9,21 @@ import Input from "../../components/forms/Input"
 import Button from "../../components/forms/Button"
 import { Modal } from "../../components/ui/modal/Modal"
 import Select from '../../components/forms/Select'
+import { useDebounce } from '../../hooks/useDebounce'
+import Pagination from '../../components/ui/table/Pagination'
+import LoadingTable from '../../components/ui/table/LoadingTable'
 
 const Users = () => {
+    const [loading, setLoading] = useState(true)
     const { getMasterData, createMasterData, updateMasterDataById, deleteMasterDataById } = useMasterDataService()
     const [usersData, setUsersData] = useState([])
+    const [pagination, setPagination] = useState({
+        page: 1,
+        limit: 10,
+        totalPage: 0
+    })
+    const [searchQ, setSearchQ] = useState("")
+    const debouncedQ = useDebounce(searchQ, 1000)
     const [optionRoles, setOptionRoles] = useState([])
     const [showModal, setShowModal] = useState({
         type: "add",
@@ -40,16 +51,28 @@ const Users = () => {
 
     const fetchMasterData = async() => {
         try {
-            const response = await getMasterData("users")
-            setUsersData(response?.data?.data)
+            setLoading(true)
+            const response = await getMasterData("users", pagination.page, pagination.limit, searchQ)
+            const resData = response?.data?.data
+            const resPagination = response?.data?.pagination
+            setUsersData(resData)
+            setPagination(resPagination)
         } catch (error) {
+            setUsersData([])
+            setPagination({
+                ...pagination,
+                page: 0,
+                totalPage: 0
+            })
             console.error(error)
+        } finally{
+            setLoading(false)
         }
     }
 
     const fetchOptionsRoles = async() => {
         try {
-            const response = await getMasterData("roles")
+            const response = await getMasterData("roles", "", "", "")
             const options = response?.data?.data?.map((item)=>{
                 return{
                     label: item.ROLENAME,
@@ -64,8 +87,11 @@ const Users = () => {
 
     useEffect(()=>{
         fetchOptionsRoles()
-        fetchMasterData()
     }, [])
+
+    useEffect(()=>{
+        fetchMasterData()
+    }, [pagination.page, pagination.limit, debouncedQ])
 
     const handleOpenModal = (type, data) => {
         setIdUser(data.ID)
@@ -273,6 +299,7 @@ const Users = () => {
                                                 error={errors?.password !== ""}
                                                 hint={errors?.password}
                                                 onKeyDown={handleEnter}
+                                                isPassword={true}
                                             />
                                         </div>
                                         <div className='mb-4'>
@@ -285,6 +312,7 @@ const Users = () => {
                                                 error={errors?.passwordConfirmation !== ""}
                                                 hint={errors?.passwordConfirmation}
                                                 onKeyDown={handleEnter}
+                                                isPassword={true}
                                             />
                                         </div>
                                     </div>
@@ -327,6 +355,8 @@ const Users = () => {
                         <Input
                             placeholder={"Search"}
                             endIcon={<FontAwesomeIcon icon={faSearch}/>}
+                            value={searchQ}
+                            onChange={(e)=>setSearchQ(e.target.value)}
                         />
                     </div>
                     <Table>
@@ -341,7 +371,7 @@ const Users = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {usersData.map((item, index)=>{
+                            {(usersData.length > 0 && !loading) && usersData.map((item, index)=>{
                                 return(
                                     <TableRow key={index}>
                                         <TableCell>{index+1}</TableCell>
@@ -360,6 +390,22 @@ const Users = () => {
                             })}
                         </TableBody>
                     </Table>
+                    <LoadingTable data={usersData} loading={loading}/>
+                    <div className="mt-4">
+                        <Pagination
+                            page={pagination.page}
+                            totalPage={pagination.totalPage}
+                            onPageChange={(e)=>{
+                                setPagination({...pagination, page: e})
+                            }}
+                            showLimit
+                            onLimitChange={(e)=>{
+                                setPagination({ ...pagination, limit: e, page: 1})
+                            }}
+                            limit={pagination.limit}
+                            options={[10, 25, 50]}
+                        />
+                    </div>
                 </CardContent>
             </Card>
         </div>
