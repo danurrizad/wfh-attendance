@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { Link, useLocation } from 'react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUser, faGear, faTimesRectangle, faHome } from '@fortawesome/free-solid-svg-icons'
+import { faUser, faGear, faClock } from '@fortawesome/free-solid-svg-icons'
 
 const Sidebar = () => {
   const location = useLocation();
@@ -16,14 +16,9 @@ const Sidebar = () => {
       section: "Home",
     },
     {
-      name: "Home",
-      href: "/home/admin",
-      icon: faHome
-    },
-    {
       name: "Attendances",
       href: "/attendances",
-      icon: faTimesRectangle
+      icon: faClock
     },
     {
       section: "Master",
