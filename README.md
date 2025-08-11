@@ -47,6 +47,11 @@ PORT=5000 or any port
 ACCESS_TOKEN_SECRET=[ACCESS_TOKEN_SECRET_STRING]
 REFRESH_TOKEN_SECRET=[REFRESH_TOKEN_SECRET_STRING]
 ```
+#### c. Install Prerequisites
+Run script below to create initial Tables, Role, and User for a initial.
+```bash
+node initialization/CreatePrerequisites.js
+```
 
 #### c. Start the Backend
 From the `backend` directory, run the server.
@@ -76,4 +81,11 @@ cd frontend
 npm start
 ```
 The application will open in your browser at `http://localhost:3000` or in the any port that served.
+
+### 4. Login into Application
+Use this account for login as HR
+<br>
+Username: `hr1`
+<br>
+Password: `admin123`
 
