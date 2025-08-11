@@ -85,13 +85,11 @@ const Roles = () => {
 
     const handleSubmit = async() => {
         try {
-            let response
             if(showModal.type === "add"){
-                response = await createMasterData("role", form)
+                await createMasterData("role", form)
             }else if(showModal.type === "update"){
-                response = await updateMasterDataById("role", idRole, form)
+                await updateMasterDataById("role", idRole, form)
             }
-            console.log("RESPOSNSE SUBMIT: ", response)
             fetchMasterData()
             handleCloseModal(showModal.type)
         } catch (error) {
@@ -101,8 +99,7 @@ const Roles = () => {
 
     const handleDelete = async() => {
         try {
-            const response = await deleteMasterDataById("role", idRole)
-            console.log("RESPONSE DELETE: ", response)
+            await deleteMasterDataById("role", idRole)
             fetchMasterData()
             handleCloseModal(showModal.type)
         } catch (error) {

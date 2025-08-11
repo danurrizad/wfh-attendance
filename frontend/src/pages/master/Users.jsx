@@ -111,10 +111,6 @@ const Users = () => {
         })
     } 
 
-    useEffect(()=>{
-        console.log("current form: ", form)
-    }, [form])
-
     const handleCloseModal = (type) => {
         setShowModal({
             ...showModal,
@@ -210,18 +206,15 @@ const Users = () => {
             if(!isValid && showModal.type !== "delete"){
                 return
             } 
-            let response
-            console.log("form: ", form)
             if(showModal.type === "add"){
-                response = await createMasterData('user', form)
+                await createMasterData('user', form)
             }else if(showModal.type === "update"){
-                response = await updateMasterDataById('user', idUser, form)
+                await updateMasterDataById('user', idUser, form)
             }else if(showModal.type === "delete"){
-                response = await deleteMasterDataById('user', idUser)
+                await deleteMasterDataById('user', idUser)
             }
             fetchMasterData()
             handleCloseModal(showModal.type)
-            console.log("response submit: ", response)
         } catch (error) {
             console.error(error)
         }

@@ -24,7 +24,6 @@ export const SidebarProvider = ({
   };
 
   const toggleMobileSidebar = () => {
-    console.log("toggle mobile")
     setIsMobileExpanded((prev) => !prev);
   };
 
