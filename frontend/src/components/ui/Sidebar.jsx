@@ -44,7 +44,7 @@ const Sidebar = () => {
         { (isExpanded || isMobileExpanded) ? (
           <h1 className='font-bold'>WFH ATTENDANCE SYSTEM</h1>
         ):(
-          <h1 className='text-center font-bold'>WFH</h1>
+          <img src='/public/logo.png' className=''/>
         )}
       </div>
       <div className='flex flex-col gap-4 px-2'>
